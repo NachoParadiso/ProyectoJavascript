@@ -1,2 +1,0 @@
-# ProyectoJava
-ProyectoCoderHouseJS
