@@ -1,103 +1,58 @@
-const notasPermitidas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-let alumnos = []
+const notasPermitidas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-function Alumno(nombre, apellido, id) {
-    this.nombre = nombre
-    this.apellido = apellido
-    this.id = id
-    this.notas = []
-    this.promedio = 0
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const notasForm = document.getElementById('notasForm');
+    notasForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        calcularPromedio();
+    });
+});
 
-function NotasParciales(alumno) {
-    let notasIngresadas = 0
+function calcularPromedio() {
+    const nota1 = parseFloat(document.getElementById('nota1').value);
+    const nota2 = parseFloat(document.getElementById('nota2').value);
+    const nota3 = parseFloat(document.getElementById('nota3').value);
+    const nota4 = parseFloat(document.getElementById('nota4').value);
 
-    for (let i = 1; i <= 4; i++) {
-        let nota = prompt(`Ingrese la nota del parcial ${i} de ${alumno.nombre} ${alumno.apellido}`)
-        if (nota === null) {
-            console.error("El ingreso de notas fue cancelado por el alumno.")
-            return
-        } else if (nota === "") {
-            console.warn("El alumno no ingresó una nota.")
-            nota = "0"
-        }
-
-        nota = parseFloat(nota)
-        if (isNaN(nota) || !validarNota(nota)) {
-            console.error("El valor ingresado no es válido. Se tomará como 0.")
-            nota = 0
-        }
-
-        alumno.notas.push(nota)
-        notasIngresadas++
+    if (!validarNota(nota1) || !validarNota(nota2) || !validarNota(nota3) || !validarNota(nota4)) {
+        alert('Las notas deben estar entre 0 y 10.');
+        return;
     }
 
-    if (notasIngresadas === 0) {
-        console.warn("El alumno no completó ninguna nota.")
-        return
-    }
+    const promedio = (nota1 + nota2 + nota3 + nota4) / 4;
+    const alumno = {
+        notas: [nota1, nota2, nota3, nota4],
+        promedio: promedio.toFixed(2)
+    };
 
-    alumno.promedio = alumno.notas.reduce((total, nota) => total + nota, 0) / notasIngresadas
-    let resultado = aprobadoOdesaprobado(alumno.promedio)
-    console.log(`${alumno.nombre} ${alumno.apellido}, tu promedio en este cuatrimestre es: ${alumno.promedio}`)
-    console.log(resultado.message)
-
-    if (resultado.message === "Aprobaste🤙🏼" || resultado.message === "Promocionaste✅🤓") {
-        console.log("¡Felicidades! Aquí están las fechas de final: 24/4 y 30/4 🤞🏼")
-
-    } else if (resultado.message === "Desaprobado❌😭") {
-        let volverAnotarse = prompt("¿Te gustaría volver a anotarte para rendir en la próxima fecha? (si/no)")
-        if (volverAnotarse.toLowerCase() === "si") {
-            console.log("¡Genial! Aquí están las fechas de inscripción: 17/5 o 19/5!!")
-        } else if (volverAnotarse.toLowerCase() === "no") {
-            console.log("¡Te vamos a extrañar!😭 ")
-        } else {
-            console.log("Respuesta inválida. Por favor, responde 'si' o 'no'.")
-        }
-    }
+    mostrarResultado(alumno);
+    almacenarAlumno(alumno);
 }
 
 function validarNota(nota) {
-    return notasPermitidas.includes(nota)
+    return notasPermitidas.includes(nota);
+}
+
+function mostrarResultado(alumno) {
+    const resultadoElement = document.getElementById('resultado');
+    resultadoElement.innerHTML = `
+        <p>Promedio: ${alumno.promedio}</p>
+        <p>${aprobadoOdesaprobado(alumno.promedio)}</p>
+    `;
 }
 
 function aprobadoOdesaprobado(promedio) {
-    let resultado = {}
-
     if (promedio >= 7) {
-        resultado.message = "Promocionaste✅🤓"
+        return "¡Promocionaste! 🎉";
     } else if (promedio >= 4) {
-        resultado.message = "Aprobaste🤙🏼"
+        return "¡Aprobaste! 👍";
     } else {
-        resultado.message = "Desaprobado❌😭"
+        return "¡Desaprobaste! 😔";
     }
-
-    return resultado
 }
 
-function solicitarDatosAlumno() {
-    let nombre = prompt("Ingrese el nombre del alumno:")
-    if (nombre === null) {
-        console.error("El ingreso fue cancelado por el alumno.")
-        return
-    } 
-    let apellido = prompt("Ingrese el apellido del alumno:")
-    if (apellido === null) {
-        console.error("El ingreso fue cancelado por el alumno.")
-        return
-    } 
-    let id = prompt("Ingrese el número de identificación del alumno:")
-    if (id === null) {
-            console.error("El ingreso fue cancelado por el alumno.")
-            return
-        } 
-    return new Alumno(nombre, apellido, id)
-    
+function almacenarAlumno(alumno) {
+    let alumnos = JSON.parse(localStorage.getItem('alumnos')) || [];
+    alumnos.push(alumno);
+    localStorage.setItem('alumnos', JSON.stringify(alumnos));
 }
-
-function ArrancaProceso() {
-    let alumno = solicitarDatosAlumno()
-    NotasParciales(alumno)
-    alumnos.push(alumno)
-}
-
